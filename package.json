@@ -1,0 +1,31 @@
+{
+  "name": "nightwatch-video-recorder",
+  "version": "0.0.0",
+  "title": "Nightwatch.js video screen recording via ffmpeg",
+  "description": "Record videos of Nightwatch.js test sessions. Uses ffmpeg to capture a (remote) webdriver desktop screen.",
+  "keywords": [
+    "nightwatch",
+    "video",
+    "screen",
+    "recording",
+    "ffmpeg",
+    "webdriver"
+  ],
+  "homepage": "https://github.com/blueimp/nightwatch-video-recorder",
+  "author": {
+    "name": "Sebastian Tschan",
+    "url": "https://blueimp.net"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/blueimp/nightwatch-video-recorder.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "scripts": {
+    "postversion": "git push --tags origin HEAD && npm publish"
+  },
+  "main": "index.js"
+}
