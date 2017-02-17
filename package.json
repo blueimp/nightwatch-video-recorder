@@ -1,6 +1,6 @@
 {
   "name": "nightwatch-video-recorder",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "Nightwatch.js video screen recording via ffmpeg",
   "description": "Record videos of Nightwatch.js test sessions. Uses ffmpeg to capture a (remote) webdriver desktop screen.",
   "keywords": [
