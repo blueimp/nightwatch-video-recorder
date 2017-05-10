@@ -32,10 +32,16 @@ module.exports = {
     const settings = browser.globals.test_settings
     const videoSettings = settings.videos
     const currentTest = browser.currentTest
+    const test = currentTest || {
+      module: 'test',
+      results: {
+        failed: true
+      }
+    };
     if (videoSettings && videoSettings.enabled) {
       const dateTime = new Date().toISOString().split('.')[0].replace(/:/g, '-')
       const format = videoSettings.format || 'mp4'
-      const fileName = `${currentTest.module}-${dateTime}.${format}`
+      const fileName = `${test.module}-${dateTime}.${format}`
       const path = require('path')
       const file = path.resolve(path.join(videoSettings.path || '', fileName))
       mkdirp(path.dirname(file))
@@ -70,7 +76,7 @@ module.exports = {
         }
       ).on('close', function () {
         // If on_failure is set, delete the video file unless the tests failed:
-        if (videoSettings.delete_on_success && !currentTest.results.failed) {
+        if (videoSettings.delete_on_success && !test.results.failed) {
           require('fs').unlink(file)
         }
       })
