@@ -38,6 +38,9 @@ module.exports = {
         failed: true
       }
     };
+    test.results = test.results || {
+      failed: true
+    }
     if (videoSettings && videoSettings.enabled) {
       const dateTime = new Date().toISOString().split('.')[0].replace(/:/g, '-')
       const format = videoSettings.format || 'mp4'
