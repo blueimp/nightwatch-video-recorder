@@ -28,16 +28,20 @@ Enable the video screen recording in your test settings:
 {
   "test_settings": {
     "default": {
-      "videos": {
-        "enabled": true,
-        "delete_on_success": false,
-        "path": "",
-        "format": "mp4",
-        "resolution": "1440x900",
-        "fps": 15,
-        "display": ":60",
-        "pixel_format": "yuv420p"
-      }
+      "globals": {
+         "test_settings": {
+           "videos": {
+             "enabled": true,
+             "delete_on_success": false,
+             "path": "",
+             "format": "mp4",
+             "resolution": "1440x900",
+             "fps": 15,
+             "display": ":60",
+             "pixel_format": "yuv420p"
+           }
+         }
+       }
     }
   }
 }
