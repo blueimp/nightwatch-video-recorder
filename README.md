@@ -37,7 +37,8 @@ Enable the video screen recording in your test settings:
         "fps": 15,
         "display": ":60",
         "pixel_format": "yuv420p"
-      }
+      },
+      "globals": {}
     }
   }
 }
