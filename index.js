@@ -30,7 +30,11 @@ module.exports = {
       const fileName = `${test.module}-${dateTime}.${format}`
       const path = require('path')
       const file = path.resolve(path.join(videoSettings.path || '', fileName))
-      mkdirp(path.dirname(file), function() {
+      mkdirp(path.dirname(file), function(err) {
+        if (err) {
+          done(err)
+          return
+        }
         browser.ffmpeg = require('child_process').execFile(
           'ffmpeg',
           [
