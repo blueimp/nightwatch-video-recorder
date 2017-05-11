@@ -27,5 +27,8 @@
   "scripts": {
     "postversion": "git push --tags origin HEAD && npm publish"
   },
-  "main": "index.js"
+  "main": "index.js",
+  "dependencies": {
+    "mkdirp": "^0.5.1"
+  }
 }
