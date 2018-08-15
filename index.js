@@ -71,7 +71,11 @@ module.exports = {
       ).on('close', function () {
         // If on_failure is set, delete the video file unless the tests failed:
         if (videoSettings.delete_on_success && !currentTest.results.failed) {
-          require('fs').unlink(file)
+          require('fs').unlink(file, function(err) {
+            if(err){
+              throw err
+            }
+          })
         }
       })
     }
