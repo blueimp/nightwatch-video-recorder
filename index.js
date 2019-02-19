@@ -10,79 +10,82 @@
  * https://opensource.org/licenses/MIT
  */
 
-// Function to create a directory similar to the shell "mkdir -p" command:
-function mkdirp (dir, mode) {
-  const path = require('path')
-  const fs = require('fs')
-  dir = path.resolve(dir)
-  if (fs.existsSync(dir)) return dir
-  try {
-    fs.mkdirSync(dir, mode)
-    return dir
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      return mkdirp(path.dirname(dir), mode) && mkdirp(dir, mode)
-    }
-    throw error
-  }
+const fs = require('fs')
+const path = require('path')
+const recordScreen = require('record-screen')
+const screenRecordings = new Map()
+
+function sanitizeBaseName(str) {
+  // Remove non-word characters from the start and end of the string.
+  // Replace everything but word characters, dots and spaces with a dash.
+  return str.replace(/^\W+|\W+$/g, '').replace(/[^\w. -]+/g, '-')
+}
+
+function createVideoFileName(browser) {
+  const options = Object.assign(
+    { dir: 'reports/videos' },
+    browser.options.videos
+  )
+  if (!options.enabled) return
+  const caps = browser.capabilities
+  const dir = path.join(
+    options.dir,
+    sanitizeBaseName(
+      [
+        caps.browserName,
+        (caps.browserVersion || caps.version || '')
+          .split('.')
+          .slice(0, 2)
+          .join('.'),
+        caps.platformName || caps.platform,
+        (caps.platformVersion || '')
+          .split('.')
+          .slice(0, 2)
+          .join('.'),
+        caps.deviceName
+      ]
+        .filter(s => s) // Remove empty ('', undefined, null, 0) values
+        .join(' ')
+    )
+  )
+  fs.mkdirSync(dir, { recursive: true })
+  return path.format({
+    dir,
+    name: sanitizeBaseName(browser.currentTest.module),
+    ext: options.ext || '.mp4'
+  })
 }
 
 module.exports = {
-  start: function (browser, done) {
-    const settings = browser.options
-    const videoSettings = settings.videos
-    const currentTest = browser.currentTest
-    if (videoSettings && videoSettings.enabled) {
-      const dateTime = new Date().toISOString().split('.')[0].replace(/:/g, '-')
-      const format = videoSettings.format || 'mp4'
-      const fileName = `${currentTest.module}-${dateTime}.${format}`
-      const path = require('path')
-      const file = path.resolve(path.join(videoSettings.path || '', fileName))
-      mkdirp(path.dirname(file))
-      browser.ffmpeg = require('child_process').execFile(
-        'ffmpeg',
-        [
-          '-video_size',
-          videoSettings.resolution || '1440x900',
-          '-r',
-          videoSettings.fps || 15,
-          '-f',
-          'x11grab',
-          '-i',
-          settings.selenium_host + (videoSettings.display || ':0'),
-          '-pix_fmt',
-          videoSettings.pixel_format || 'yuv420p', // QuickTime compatibility
-          '-loglevel',
-          'error',
-          file
-        ],
-        function (error, stdout, stderr) {
-          browser.ffmpeg = null
-          if (error) {
-            // At the start, the video capture always logs an ignorable x11grab
-            // "image data event_error", which we can safely ignore:
-            const stderrLines = stderr.split('\n')
-            if (stderrLines.length !== 2 ||
-                !/x11grab .* image data event_error/.test(stderrLines[0])) {
-              throw error
-            }
-          }
-        }
-      ).on('close', function () {
-        // If on_failure is set, delete the video file unless the tests failed:
-        if (videoSettings.delete_on_success && !currentTest.results.failed) {
-          require('fs').unlink(file)
-        }
-      })
-    }
+  start: function(browser, done) {
+    const options = Object.assign(
+      { hostname: browser.options.selenium_host },
+      browser.options.videos
+    )
+    if (!options.enabled) return
+    const fileName = createVideoFileName(browser)
+    const recording = recordScreen(fileName, options)
+    if (options.delete_on_pass) recording.delete_on_pass = fileName
+    recording.promise.catch(err => console.error(err))
+    screenRecordings.set(fileName, recording)
     done()
   },
-  stop: function (browser, done) {
-    const ffmpeg = browser.ffmpeg
-    if (ffmpeg) {
-      ffmpeg.on('close', function () { done() }).kill()
-    } else {
-      done()
+  stop: function(browser, done) {
+    const fileName = createVideoFileName(browser)
+    const recording = screenRecordings.get(fileName)
+    if (recording) {
+      screenRecordings.delete(fileName)
+      recording.stop()
+      recording.promise
+        .then(() => {
+          if (recording.delete_on_pass && !browser.currentTest.results.failed) {
+            fs.unlinkSync(recording.delete_on_pass)
+          }
+          done()
+        })
+        .catch(() => done())
+      return
     }
+    done()
   }
 }

@@ -24,24 +24,28 @@ module.exports = {
 ```
 
 Enable the video screen recording in your test settings:
-```json
+```js
 {
   "test_settings": {
     "default": {
       "videos": {
-        "enabled": true,
-        "delete_on_success": false,
-        "path": "",
-        "format": "mp4",
-        "resolution": "1440x900",
-        "fps": 15,
-        "display": ":60",
-        "pixel_format": "yuv420p"
+        "enabled": true,          // Enable video recordings
+        "delete_on_pass": true,   // Delete video when tests pass
+        "dir": "reports/videos",  // Video directory
+        "ext": ".mp4",            // Video file extension
+        "resolution": "1440x900", // Display resolution
+        "fps": 15,                // Frames per second
+        "hostname": "localhost",  // X11 server hostname
+        "display": "0",           // X11 server display
+        "pixelFormat": "yuv420p"  // Output pixel format
       }
     }
   }
 }
 ```
+
+See [blueimp/nightwatch](https://github.com/blueimp/nightwatch) for a complete
+setup example.
 
 ## License
 Released under the [MIT license](https://opensource.org/licenses/MIT).
